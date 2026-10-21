@@ -1,18 +1,49 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#101713">
+    <meta name="theme-color" content="#f4f2e9">
     <style>
         :root {
-            --bg: #101713;
-            --panel: #19231d;
-            --tile: #202d25;
-            --text: #f3f1e7;
-            --muted: #a9b5a8;
-            --green: #a8c5a0;
+            color-scheme: light;
+            --bg: #f4f2e9;
+            --panel: rgba(255, 255, 255, .66);
+            --tile: rgba(255, 255, 255, .53);
+            --text: #253228;
+            --muted: #69766b;
+            --green: #527b54;
+            --border: rgba(79, 111, 79, .24);
+            --active: rgba(207, 226, 198, .86);
+            --field-bg: rgba(255, 255, 255, .76);
+            --big-bg: rgba(218, 234, 208, .78);
+            --fact-bg: rgba(232, 239, 227, .78);
+            --footer-bg: rgba(244, 242, 233, .88);
+            --tile-shadow: 0 7px 18px rgba(49, 72, 48, .10), inset 0 1px 0 rgba(255, 255, 255, .8);
+            --panel-shadow: 0 12px 32px rgba(49, 72, 48, .08), inset 0 1px 0 rgba(255, 255, 255, .72);
+            --toggle-bg: rgba(255, 255, 255, .75);
+            --toggle-shadow: 0 8px 24px rgba(38, 61, 39, .18), inset 0 1px 0 rgba(255, 255, 255, .9);
+        }
+
+        html[data-theme="dark"] {
+            color-scheme: dark;
+            --bg: #111713;
+            --panel: rgba(30, 41, 33, .72);
+            --tile: rgba(43, 57, 46, .61);
+            --text: #edf2e9;
+            --muted: #aab8aa;
+            --green: #b6d2aa;
+            --border: rgba(170, 198, 163, .22);
+            --active: rgba(69, 95, 69, .9);
+            --field-bg: rgba(28, 39, 31, .82);
+            --big-bg: rgba(54, 76, 56, .76);
+            --fact-bg: rgba(18, 27, 21, .72);
+            --footer-bg: rgba(17, 23, 19, .9);
+            --tile-shadow: 0 7px 20px rgba(0, 0, 0, .17), inset 0 1px 0 rgba(255, 255, 255, .045);
+            --panel-shadow: 0 12px 32px rgba(0, 0, 0, .16), inset 0 1px 0 rgba(255, 255, 255, .045);
+            --toggle-bg: rgba(35, 48, 38, .84);
+            --toggle-shadow: 0 8px 25px rgba(0, 0, 0, .32), inset 0 1px 0 rgba(255, 255, 255, .08);
         }
 
         * {
@@ -28,6 +59,7 @@
             background: var(--bg);
             color: var(--text);
             font-family: Tahoma, Arial, sans-serif;
+            transition: background-color .35s ease, color .35s ease;
             padding: 20px 16px 75px;
             overflow-x: hidden;
         }
@@ -60,9 +92,13 @@
             width: min(100%, 460px);
             margin: 22px auto;
             padding: 13px 15px;
-            background: var(--panel);
-            color: white;
-            border: 1px solid #405244;
+            background: var(--field-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            box-shadow: var(--tile-shadow);
+            backdrop-filter: blur(16px) saturate(135%);
+            -webkit-backdrop-filter: blur(16px) saturate(135%);
+            transition: background-color .35s ease, color .35s ease, border-color .35s ease, box-shadow .35s ease;
             border-radius: 12px;
             font: inherit;
             outline: none;
@@ -80,11 +116,57 @@
             margin: 18px auto
         }
 
-        .legend span {
+        .legend-filter {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            font: inherit;
             font-size: 11px;
-            padding: 8px 10px;
+            padding: 9px 13px;
             border-radius: 30px;
-            background: var(--panel)
+            color: var(--text);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            box-shadow: var(--tile-shadow);
+            backdrop-filter: blur(14px) saturate(130%);
+            -webkit-backdrop-filter: blur(14px) saturate(130%);
+            cursor: pointer;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transform: scale(1);
+            transition: transform .28s cubic-bezier(.2, .8, .2, 1),
+                background-color .25s ease, color .25s ease,
+                border-color .25s ease, box-shadow .25s ease;
+        }
+
+        .legend-filter:hover {
+            border-color: var(--green);
+            box-shadow: var(--toggle-shadow);
+        }
+
+        .legend-filter:active,
+        .legend-filter.is-pressing {
+            transform: scale(1.07, .97);
+        }
+
+        .legend-filter.is-selected {
+            background: var(--active);
+            border-color: var(--green);
+            box-shadow: var(--toggle-shadow);
+        }
+
+        .legend-filter:focus-visible {
+            outline: 2px solid var(--green);
+            outline-offset: 3px;
+        }
+
+        .filter-hint {
+            min-height: 16px;
+            margin: -7px auto 8px;
+            color: var(--muted);
+            text-align: center;
+            font-size: 11px;
         }
 
         .dot {
@@ -112,14 +194,20 @@
         }
 
         .scroll {
+            position: relative;
             width: 100%;
             max-width: 100%;
             overflow-x: auto;
+            overflow-y: hidden;
             padding: 8px 2px 15px;
-            -webkit-overflow-scrolling: touch
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+            touch-action: pan-x pan-y;
+            direction: ltr;
         }
 
         #table {
+            direction: rtl;
             display: grid;
             grid-template-columns: repeat(18, minmax(49px, 1fr));
             gap: 5px;
@@ -148,15 +236,19 @@
             background: var(--tile);
             color: var(--text);
             border-radius: 8px;
+            border-color: var(--border);
             cursor: pointer;
             font-family: inherit;
-            transition: background .2s, border-color .2s, transform .2s;
+            box-shadow: var(--tile-shadow);
+            background-image: linear-gradient(145deg, rgba(255, 255, 255, .055), transparent 68%);
+            transition: background-color .14s ease, border-color .14s ease, transform .14s ease;
         }
 
         .el:hover,
         .el.active {
-            background: #354b38;
+            background: var(--active);
             border-color: var(--green);
+            box-shadow: 0 10px 24px rgba(64, 95, 62, .17), inset 0 1px 0 rgba(255, 255, 255, .24);
             transform: translateY(-2px)
         }
 
@@ -198,7 +290,12 @@
         }
 
         .el.hide {
-            opacity: .12
+            opacity: .14;
+            filter: grayscale(.25);
+        }
+
+        .el.category-hidden {
+            display: none !important;
         }
 
         .info {
@@ -207,8 +304,12 @@
             margin: 25px auto;
             padding: 20px;
             background: var(--panel);
-            border: 1px solid #35473a;
+            border: 1px solid var(--border);
             border-radius: 18px;
+            box-shadow: var(--panel-shadow);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            transition: background-color .35s ease, color .35s ease, border-color .35s ease, box-shadow .35s ease;
         }
 
         .info-head {
@@ -227,7 +328,11 @@
             display: grid;
             place-content: center;
             text-align: center;
-            background: #26372a;
+            background: var(--big-bg);
+            box-shadow: var(--tile-shadow);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            transition: background-color .35s ease, border-color .35s ease, box-shadow .35s ease;
         }
 
         .big b {
@@ -259,9 +364,14 @@
 
         .fact {
             padding: 12px;
-            background: #111a14;
+            background: var(--fact-bg);
+            border: 1px solid var(--border);
             border-radius: 10px;
-            min-width: 0
+            min-width: 0;
+            box-shadow: var(--tile-shadow);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: background-color .35s ease, border-color .35s ease, box-shadow .35s ease;
         }
 
         .fact small {
@@ -282,8 +392,11 @@
             left: 0;
             width: 100%;
             padding: 13px 18px;
-            background: #101713f2;
-            border-top: 1px solid #29382d;
+            background: var(--footer-bg);
+            border-top: 1px solid var(--border);
+            backdrop-filter: blur(18px) saturate(135%);
+            -webkit-backdrop-filter: blur(18px) saturate(135%);
+            transition: background-color .35s ease, border-color .35s ease;
             z-index: 5;
             text-align: left;
         }
@@ -319,6 +432,87 @@
 
             45% {
                 transform: scale(1.2)
+            }
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 9999;
+            display: grid;
+            place-items: center;
+            width: 54px;
+            height: 54px;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            color: var(--text);
+            background: var(--toggle-bg);
+            box-shadow: var(--toggle-shadow);
+            backdrop-filter: blur(18px) saturate(145%);
+            -webkit-backdrop-filter: blur(18px) saturate(145%);
+            cursor: pointer;
+            pointer-events: auto;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transform: scale(1);
+            transition: transform .28s cubic-bezier(.2, .8, .2, 1),
+                background-color .35s ease, color .35s ease,
+                border-color .35s ease, box-shadow .35s ease;
+        }
+
+        .theme-toggle:hover {
+            box-shadow: 0 10px 29px rgba(45, 70, 44, .2), inset 0 1px 0 rgba(255, 255, 255, .42);
+        }
+
+        html[data-theme="dark"] .theme-toggle:hover {
+            box-shadow: 0 10px 29px rgba(0, 0, 0, .34), inset 0 1px 0 rgba(255, 255, 255, .08);
+        }
+
+        .theme-toggle:active,
+        .theme-toggle.is-pressing {
+            transform: scale(1.16, 1.09);
+        }
+
+        .theme-toggle:focus-visible {
+            outline: 2px solid var(--green);
+            outline-offset: 4px;
+        }
+
+        .theme-toggle svg {
+            width: 23px;
+            height: 23px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: transform .35s cubic-bezier(.2, .8, .2, 1), opacity .2s ease;
+        }
+
+        .theme-toggle .moon-icon {
+            display: none;
+        }
+
+        .theme-toggle.is-dark .sun-icon {
+            display: none;
+        }
+
+        .theme-toggle.is-dark .moon-icon {
+            display: block;
+        }
+
+        .theme-toggle.is-dark .moon-icon {
+            transform: rotate(-12deg);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                transition-duration: .01ms !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
             }
         }
 
@@ -372,6 +566,16 @@
 
 <body>
 
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="تغییر به حالت تاریک" title="حالت تاریک" aria-pressed="false">
+        <svg class="sun-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2.2M12 19.8V22M4.93 4.93l1.56 1.56M17.51 17.51l1.56 1.56M2 12h2.2M19.8 12H22M4.93 19.07l1.56-1.56M17.51 6.49l1.56-1.56"></path>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.7 15.3A8.7 8.7 0 0 1 8.7 3.3 8.9 8.9 0 1 0 20.7 15.3Z"></path>
+        </svg>
+    </button>
+
     <header>
         <div class="kicker">SCIENCE • GRADE 9</div>
         <h1>جدول تناوبی عناصر</h1>
@@ -380,12 +584,13 @@
 
     <input id="search" class="search" placeholder="جست‌وجو با نام، نماد یا عدد اتمی..." autocomplete="off">
 
-    <div class="legend">
-        <span class="met"><i class="dot"></i>فلزها</span>
-        <span class="non"><i class="dot"></i>نافلزها</span>
-        <span class="gas"><i class="dot"></i>گازهای نجیب</span>
-        <span class="other"><i class="dot"></i>شبه‌فلزها</span>
+    <div class="legend" role="group" aria-label="فیلتر دسته‌بندی عناصر">
+        <button type="button" class="legend-filter met" data-filter="met" aria-pressed="false"><i class="dot"></i>فلزها</button>
+        <button type="button" class="legend-filter non" data-filter="non" aria-pressed="false"><i class="dot"></i>نافلزها</button>
+        <button type="button" class="legend-filter gas" data-filter="gas" aria-pressed="false"><i class="dot"></i>گازهای نجیب</button>
+        <button type="button" class="legend-filter other" data-filter="other" aria-pressed="false"><i class="dot"></i>شبه‌فلزها</button>
     </div>
+    <p id="filterHint" class="filter-hint" aria-live="polite">برای دیدن عناصر هر دسته، روی عنوانش بزن.</p>
 
     <div class="scroll">
         <div id="table"></div>
@@ -537,6 +742,7 @@
         const table = document.getElementById("table");
         const lanth = document.getElementById("lanth");
         const actin = document.getElementById("actin");
+        const elementTiles = new Map();
 
         function makeTile(e) {
             const b = document.createElement("button");
@@ -547,6 +753,7 @@
             b.title = `${e.fa} (${e.en})`;
             b.setAttribute("aria-label", `${e.fa}، عدد اتمی ${e.n}`);
             b.addEventListener("click", () => showElement(e));
+            elementTiles.set(e.n, b);
             return b;
         }
 
@@ -583,16 +790,85 @@
  </div>`;
         }
 
-        document.getElementById("search").addEventListener("input", function () {
-            const q = this.value.trim().toLowerCase();
+        const searchInput = document.getElementById("search");
+        const filterButtons = Array.from(document.querySelectorAll(".legend-filter"));
+        const filterHint = document.getElementById("filterHint");
+        let activeTypeFilter = null;
+
+        function applyFilters() {
+            const q = searchInput.value.trim().toLowerCase();
+
             elements.forEach(e => {
-                const match = !q || String(e.n) === q ||
+                const tile = elementTiles.get(e.n);
+                const textMatch = !q || String(e.n) === q ||
                     e.symbol.toLowerCase().includes(q) ||
                     e.fa.includes(q) || e.en.toLowerCase().includes(q);
-                document.querySelector(`[data-id="${e.n}"]`).classList.toggle("hide", !match);
+                const categoryMatch = !activeTypeFilter || e.type === activeTypeFilter;
+
+                tile.classList.toggle("hide", !textMatch);
+                tile.classList.toggle("category-hidden", !categoryMatch);
             });
+
+            filterButtons.forEach(button => {
+                const selected = button.dataset.filter === activeTypeFilter;
+                button.classList.toggle("is-selected", selected);
+                button.setAttribute("aria-pressed", String(selected));
+            });
+
+            if (activeTypeFilter) {
+                const selectedButton = filterButtons.find(button => button.dataset.filter === activeTypeFilter);
+                filterHint.textContent = `نمایش دستهٔ ${selectedButton.textContent.trim()}؛ برای دیدن همهٔ عناصر دوباره روی همین عنوان بزن.`;
+            } else {
+                filterHint.textContent = "برای دیدن عناصر هر دسته، روی عنوانش بزن.";
+            }
+        }
+
+        searchInput.addEventListener("input", applyFilters);
+
+        filterButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                const type = button.dataset.filter;
+                activeTypeFilter = activeTypeFilter === type ? null : type;
+                applyFilters();
+            });
+
+            button.addEventListener("pointerdown", () => button.classList.add("is-pressing"));
+            ["pointerup", "pointercancel", "pointerleave", "touchend", "touchcancel"].forEach(eventName => {
+                button.addEventListener(eventName, () => button.classList.remove("is-pressing"), { passive: true });
+            });
+            button.addEventListener("blur", () => button.classList.remove("is-pressing"));
         });
 
+        const themeToggle = document.getElementById("themeToggle");
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
+        function setTheme(theme) {
+            const isDark = theme === "dark";
+            document.documentElement.dataset.theme = theme;
+            themeToggle.classList.toggle("is-dark", isDark);
+            themeToggle.setAttribute("aria-pressed", String(isDark));
+            themeToggle.setAttribute("aria-label", isDark ? "تغییر به حالت روشن" : "تغییر به حالت تاریک");
+            themeToggle.title = isDark ? "حالت روشن" : "حالت تاریک";
+            themeColorMeta.setAttribute("content", isDark ? "#111713" : "#f4f2e9");
+        }
+
+        // Native click works for mouse, keyboard, and touch-generated clicks.
+        themeToggle.addEventListener("click", function (event) {
+            event.preventDefault();
+            const current = document.documentElement.dataset.theme;
+            setTheme(current === "dark" ? "light" : "dark");
+        });
+
+        // Press animation is decorative and never blocks the click action.
+        themeToggle.addEventListener("pointerdown", () => themeToggle.classList.add("is-pressing"));
+        const releaseThemeButton = () => themeToggle.classList.remove("is-pressing");
+        ["pointerup", "pointercancel", "pointerleave", "touchend", "touchcancel"].forEach(eventName => {
+            themeToggle.addEventListener(eventName, releaseThemeButton, { passive: true });
+        });
+        themeToggle.addEventListener("blur", releaseThemeButton);
+
+        // Keep the table usable on narrow screens and select the first element reliably.
+        applyFilters();
         showElement(elements.find(e => e.symbol === "Fe"));
     </script>
 </body>
